@@ -29,9 +29,6 @@ WAURL = 'http://www.hetweeractueel.nl/weer/' + WALocation + '/actueel/'
 # updated every 10 minutes
 KNMI = "YES"  # use in script: YES or NO
 KNMILocation = "Heino"
-KNMIURL = 'ftp://ftp.knmi.nl/pub_weerberichten/tabel_10min_data.html'
-# Define an identifying column list. Add some empty entries due to possible trailing rubbish
-knmi_columns = ['Locatie', 'Weer', 'Temperatuur', 'RV', 'Wind richting', 'Wind (m/s)', 'Zicht (m)', 'Druk (hPa)', '', '', '' ]
 
 ##########################################################################
 #### It should not be necessary to change anything below these lines #####
@@ -41,6 +38,9 @@ knmi_columns = ['Locatie', 'Weer', 'Temperatuur', 'RV', 'Wind richting', 'Wind (
 pim_user_pass = pimatic_user + ':' + pimatic_pass
 curl_prefix = 'curl --insecure -X PATCH --header "Content-Type:application/json" --data \'{"type": "value", "valueOrExpression": "'
 pim_server_url = pimatic_server + '/api/variables/'
+KNMIURL = 'ftp://ftp.knmi.nl/pub_weerberichten/tabel_10min_data.html'
+# Define an identifying column list. Add some empty entries due to possible trailing rubbish
+knmi_columns = ['Locatie', 'Weer', 'Temperatuur', 'RV', 'Wind richting', 'Wind (m/s)', 'Zicht (m)', 'Druk (hPa)', '', '', '' ]
 
 
 # Start the real work
