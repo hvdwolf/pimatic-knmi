@@ -2,11 +2,12 @@
 
 # version 0.1, 20151011, hvdwolf@gmnail.com
 # extremely quick and dirty approach. Needs clean up, improvements, modularisation
-# Currently uses OS curl to post. Needs to be python posting via urllibor pycurl
+# Currently uses OS curl to post. Needs to be python posting via urllib or pycurl
 
+# ToDo: Try to add weeractueel and full table download from KNMI and xml parse it. Requires currently
+# more effort due to non-DTD characters.
 
 import urllib, urllib2, os
-#from xml.etree import ElementTree as ET
 
 ### Pimatic settings ###
 # localhost is fine when running from your pimatic server. Otherwise change to suitable ip address or dns. Can be https as well.
