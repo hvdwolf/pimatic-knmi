@@ -10,7 +10,8 @@
 import urllib, urllib2, os
 
 ### Pimatic settings ###
-# localhost is fine when running from your pimatic server. Otherwise change to suitable ip address or dns. Can be https as well.
+# localhost is fine when running from your pimatic server. Otherwise change to suitable ip address or dns. 
+# Can be https as well. Also: if you use another port then 80 or 443 do not forget to add the port number.
 pimatic_server = 'localhost'
 # user and password. I prefer a special posting user having a role of varposter with only  "variables": "write" in the varposter role. Rest to "none" or false.
 pimatic_user = 'username'
