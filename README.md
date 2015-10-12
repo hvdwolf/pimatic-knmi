@@ -1,5 +1,5 @@
 # pimatic-knmi
-Simple python 2 script to retrieve data from KNMI and use it in pimatic
+Simple python (2 & 3 compatible) script to retrieve data from KNMI and use it in pimatic
 
 You need to change some settings in the top of your script for your pimatic server
 <pre>
