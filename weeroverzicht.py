@@ -4,7 +4,6 @@
 # Version 20151012
 # make python3 and python 2 compatible
 
-
 # version 0.1, 20151011, hvdwolf@gmnail.com
 # extremely quick and dirty approach. Needs clean up, improvements, modularisation
 # Currently uses OS curl to post. Needs to be python posting via urllib or pycurl
