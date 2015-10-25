@@ -55,7 +55,7 @@ curl_prefix = 'curl --insecure -X PATCH --header "Content-Type:application/json"
 pim_server_url = pimatic_server + '/api/variables/'
 KNMIURL = 'ftp://ftp.knmi.nl/pub_weerberichten/tabel_10min_data.html'
 # Define an identifying column list. Add some empty entries due to possible trailing rubbish
-knmi_columns = ['Locatie', 'Weer', 'Temperatuur', 'RV', 'Wind richting', 'Wind (m/s)', 'Zicht (m)', 'Druk (hPa)', '', '', '' ]
+knmi_columns = ['Locatie', 'Weer', 'Temperatuur', 'Chill', 'RV', 'Wind richting', 'Wind (m/s)', 'Zicht (m)', 'Druk (hPa)', '', '', '' ]
 
 
 # Start the real work
@@ -94,6 +94,8 @@ if KNMI == 'YES':
 			os.system(curl_prefix + KNMILocation + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-locatie')
 		if knmi_columns[counter] == 'Temperatuur':
 			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-temperatuur')
+		if knmi_columns[counter] == 'Chill':
+			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-chill')
 		if knmi_columns[counter] == 'RV':
 			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-rv')
 		if knmi_columns[counter] == 'Wind richting':
