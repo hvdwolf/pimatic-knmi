@@ -13,6 +13,9 @@
 # more effort due to non-DTD characters.
 
 import urllib, os
+from xml.etree import ElementTree as ET
+#from html_table_parser import HTMLTableParser
+
 try:
 	# For python3
 	from urllib.request import urlopen
@@ -27,8 +30,8 @@ except ImportError:
 # Can be https as well. Also: if you use another port then 80 or 443 do not forget to add the port number.
 pimatic_server = 'localhost'
 # user and password. I prefer a special posting user having a role of varposter with only  "variables": "write" in the varposter role. Rest to "none" or false.
-pimatic_user = 'username'
-pimatic_pass = 'password'
+pimatic_user ='apiposter'
+pimatic_pass = 'ap1p0ster'
 
 ### Weer actueel ###
 # Has much better spreading. Check update sequence from relevant page
@@ -45,66 +48,53 @@ WAURL = 'http://www.hetweeractueel.nl/weer/' + WALocation + '/actueel/'
 KNMI = "YES"  # use in script: YES or NO
 KNMILocation = "Heino"
 
+# DEBUG True or False. If True some extra prints to screen will be done
+DEBUG = False
 ##########################################################################
 #### It should not be necessary to change anything below these lines #####
 ##########################################################################
 
 # Initialize some internal variables
 pim_user_pass = pimatic_user + ':' + pimatic_pass
-curl_prefix = 'curl --insecure -X PATCH --header "Content-Type:application/json" --data \'{"type": "value", "valueOrExpression": "'
+curl_prefix = 'curl --silent --insecure -X PATCH --header "Content-Type:application/json" --data \'{"type": "value", "valueOrExpression": "'
 pim_server_url = pimatic_server + '/api/variables/'
 KNMIURL = 'ftp://ftp.knmi.nl/pub_weerberichten/tabel_10min_data.html'
 # Define an identifying column list. Add some empty entries due to possible trailing rubbish
-knmi_columns = ['Locatie', 'Weer', 'Temperatuur', 'Chill', 'RV', 'Wind richting', 'Wind (m/s)', 'Zicht (m)', 'Druk (hPa)', '', '', '' ]
+#knmi_columns = ['Locatie', 'Weer', 'Temperatuur', 'Chill', 'RV', 'Wind richting', 'Wind (m/s)', 'Zicht (m)', 'Druk (hPa)', '', '', '' ]
 
 
 # Start the real work
-
-if WeerActueel == "YES":
-	response = urlopen(WAURL)
-	html = response.read()
-	if python3 == "YES":
-		html = str( html, encoding='utf8' )
-	split_string = 'Actueel weer ' + WALocation
-	tmppage = html.split(split_string)
-	subpage = str(tmppage[2])
-	#print(subpage)
-	tmppage = subpage.split('<table>')
-	subpage = '<table>' + str(tmppage[1])
-	tmppage = subpage.split('</table>')
-	tabel = str(tmppage[0]) + '</table>'
-	print(tabel)
-
 if KNMI == 'YES':
 	response = urlopen(KNMIURL)
 	html = response.read()
 	if python3 == "YES":
 		html = str( html, encoding='utf8' )
-	tmppage = html.split(KNMILocation + '</td>')
-	subpage = str(tmppage[1])
-	tmppage = subpage.split('</tr>')
-	table = str(tmppage[0])
-	table = table.replace('&nbsp;</td>', '', 99).replace('<td align=right>', '', 99).replace('  ', '', 999).replace('<td>', '', 999).replace('</td>', '', 99)
-	counter = 0
-	for line in table.splitlines():
-		# Finally remove still redundant spaces
-		line = line.replace(' ', '', 99)
-		# Add units to variableDevice in pimatic
-		if knmi_columns[counter] == 'Locatie':
-			os.system(curl_prefix + KNMILocation + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-locatie')
-		if knmi_columns[counter] == 'Temperatuur':
-			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-temperatuur')
-		if knmi_columns[counter] == 'Chill':
-			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-chill')
-		if knmi_columns[counter] == 'RV':
-			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-rv')
-		if knmi_columns[counter] == 'Wind richting':
-			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-wr')
-		if knmi_columns[counter] == 'Wind (m/s)':
-			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-ws')
-		if knmi_columns[counter] == 'Zicht (m)':
-			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-zicht')
-		if knmi_columns[counter] == 'Druk (hPa)':
-			os.system(curl_prefix + line + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url +'knmi-druk')
-		counter += 1
-
+	html = html.replace('<br>(&deg;C)', '', 99).replace('&nbsp;', '', 9999).replace('<br>(%)', '', 99).replace('<br>(m/s)', 'ms', 99)
+	html = html.replace('<br>(m)', '', 99).replace('<br>(hPa)', '', 99).replace('class="trcolor"', '',999).replace(' align=right', '', 999)
+	#print(html)
+	tmppage = html.split('<table width') # 2 instances
+	subpage = str(tmppage[2])
+	tmppage = subpage.split('</table>')
+	table = '<table width' + str(tmppage[0]) + '</table>'
+	#print(table)
+	xmltable = ET.XML(table)
+	rows = iter(xmltable)
+	headers = [col.text.replace(' ', '',99) for col in next(rows)]
+	if DEBUG:
+		print(headers)
+	for row in rows:
+		# check if not text/value (None), else replace all redundant hundreds of spaces and then add the ones back in halfbewolkt, zwaarbewolkt and geheelbewolkt.
+		values = ['' if col.text is None else col.text.replace(' ', '',99).replace('bewolkt', ' bewolkt',99) for col in row]
+		#print(values)
+		if KNMILocation in values:
+			counter = 0
+			for value in values:
+				if DEBUG:
+					print('header: ' + str(headers[counter]) + ', value: ' + str(value))
+				# The headers are 'Station', 'Weer', 'Temp', 'Chill', 'RV', 'Wind', 'Windms', 'Zicht', 'Druk'
+				# The headers are the variables send to pimatic
+				os.system(curl_prefix + str(value) + '"}\'  --user "' + pim_user_pass + '" ' + pim_server_url + str(headers[counter]))
+				counter += 1 
+		#if DEBUG:
+		#	print(dict(zip(headers, values)))
+		#	print('\n\n')
